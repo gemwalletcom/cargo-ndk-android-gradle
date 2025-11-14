@@ -232,3 +232,18 @@ cargoNdk {
 ```
 
 The property applies globally and can also be overridden per `buildType`.
+
+## Publishing this fork
+
+Artifacts are uploaded to [GitHub Packages](https://github.com/0xh3rman/cargo-ndk-android-gradle/packages)
+via the `Release` workflow. To publish a new version:
+
+1. Update `plugin/build.gradle` and `build.gradle` with the desired version.
+2. Push the changes and open a PR (or merge to your release branch).
+3. In GitHub → Actions → `Release`, trigger the workflow dispatch on the
+   desired ref. The workflow runs tests and executes
+   `./gradlew :plugin:publishAllPublicationsToGitHubPackagesRepository` with the
+   repository-provided `GITHUB_TOKEN`.
+
+Consumers need `read:packages` access and must authenticate (as shown in the
+configuration snippet above) to resolve the dependence.
