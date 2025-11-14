@@ -1,5 +1,5 @@
 # Cargo NDK for Android projects
-[![CI](https://github.com/0xh3rman/cargo-ndk-android-gradle/actions/workflows/ci.yml/badge.svg)](https://github.com/0xh3rman/cargo-ndk-android-gradle/actions/workflows/ci.yml)
+[![CI](https://github.com/gemwalletcom/cargo-ndk-android-gradle/actions/workflows/ci.yml/badge.svg)](https://github.com/gemwalletcom/cargo-ndk-android-gradle/actions/workflows/ci.yml)
 
 Allows building Rust code via `cargo ndk` command in android projects.
 
@@ -26,7 +26,7 @@ pluginManagement {
     repositories {
         mavenLocal()
         maven {
-            url = uri("https://maven.pkg.github.com/0xh3rman/cargo-ndk-android-gradle")
+            url = uri("https://maven.pkg.github.com/gemwalletcom/cargo-ndk-android-gradle")
             credentials {
                 username = System.getenv("GITHUB_USER") ?: findProperty("github.user")
                 password = System.getenv("GITHUB_TOKEN") ?: findProperty("github.token")
@@ -236,7 +236,7 @@ The property applies globally and can also be overridden per `buildType`.
 
 ## Publishing this fork
 
-Artifacts are uploaded to [GitHub Packages](https://github.com/0xh3rman/cargo-ndk-android-gradle/packages)
+Artifacts are uploaded to [GitHub Packages](https://github.com/gemwalletcom/cargo-ndk-android-gradle/packages)
 via the `Release` workflow. To publish a new version:
 
 1. Update `plugin/build.gradle` (and related docs) with the desired version.

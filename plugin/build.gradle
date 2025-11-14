@@ -9,8 +9,8 @@ version = "0.4.0"
 group = "com.gemwallet.rust"
 
 gradlePlugin {
-    website = 'https://github.com/0xh3rman/cargo-ndk-android-gradle'
-    vcsUrl = 'https://github.com/0xh3rman/cargo-ndk-android-gradle.git'
+    website = 'https://github.com/gemwalletcom/cargo-ndk-android-gradle'
+    vcsUrl = 'https://github.com/gemwalletcom/cargo-ndk-android-gradle.git'
     plugins {
         cargoNdkAndroidPlugin {
             id = 'com.gemwallet.rust.cargo-ndk-android'
@@ -39,7 +39,7 @@ publishing {
     repositories {
         maven {
             name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/0xh3rman/cargo-ndk-android-gradle")
+            url = uri("https://maven.pkg.github.com/gemwalletcom/cargo-ndk-android-gradle")
             credentials {
                 username = (System.getenv("GITHUB_ACTOR")
                         ?: System.getenv("GITHUB_USER")
