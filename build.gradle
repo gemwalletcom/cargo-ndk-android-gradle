@@ -1,22 +1,21 @@
 buildscript {
-    ext.plugin_version = '0.3.4'
+    ext.plugin_version = '0.4.0'
 
     repositories {
         google()
-        jcenter()
+        mavenCentral()
+        gradlePluginPortal()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.1.2'
+        classpath 'com.android.tools.build:gradle:8.7.2'
     }
 }
 
 subprojects {
     repositories {
         google()
-        jcenter()
-        maven {
-            url "https://plugins.gradle.org/m2/"
-        }
+        mavenCentral()
+        gradlePluginPortal()
     }
 }
 

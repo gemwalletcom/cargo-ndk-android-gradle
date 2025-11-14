@@ -5,6 +5,7 @@ class CargoNdkBuildTypeExtension {
 
     ArrayList<String> targets = null
     String module = null
+    String cargoExecutable = null
     String targetDirectory = null
     ArrayList<String> librariesNames = null
     Integer apiLevel = null

@@ -1,0 +1,25 @@
+name: CI
+
+on:
+  push:
+    branches: ["master"]
+  pull_request:
+    branches: ["master"]
+    paths:
+      - ".github/workflows/ci.yml"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: gradle
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Gradle Check
+        run: ./gradlew :plugin:check
+      - name: Publish Plugin to Maven Local
+        run: ./gradlew :plugin:publishToMavenLocal

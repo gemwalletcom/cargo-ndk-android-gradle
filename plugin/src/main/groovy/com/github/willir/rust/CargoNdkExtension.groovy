@@ -7,6 +7,7 @@ import org.gradle.api.Project
 class CargoNdkExtension {
     ArrayList<String> targets = RustTargetType.values().collect { it.id }
     String module = null
+    String cargoExecutable = null
     String targetDirectory = null
     ArrayList<String> librariesNames = null
     Integer apiLevel = null

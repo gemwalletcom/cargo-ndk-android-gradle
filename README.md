@@ -10,31 +10,57 @@ build the project. Also, it allows configuring rust release profile (`dev` vs `r
 for each gradle `buildType`. Actually, any options can be configured per gradle `buildType`,
 it works similar to `android` configuration.
 
-[Gradle Plugin Page](https://plugins.gradle.org/plugin/com.github.willir.rust.cargo-ndk-android).
+> **Maintained fork**: the original plugin has been inactive for a while, so this
+> repository publishes a compatible fork under the
+> `com.gemwallet.rust.cargo-ndk-android` id.
 
 ## Usage
 
-Add the plugin to your root `build.gradle`, like:
+Add the plugin via the Gradle Plugins DSL (Groovy example shown here—see
+[Gradle docs](https://docs.gradle.org/current/userguide/plugins.html#sec:plugins_block) for Kotlin DSL):
+
 ```groovy
-buildscript {
+// settings.gradle
+pluginManagement {
     repositories {
+        mavenLocal()
         maven {
-            url "https://plugins.gradle.org/m2/"
+            url = uri("https://maven.pkg.github.com/0xh3rman/cargo-ndk-android-gradle")
+            credentials {
+                username = System.getenv("GITHUB_USER") ?: findProperty("github.user")
+                password = System.getenv("GITHUB_TOKEN") ?: findProperty("github.token")
+            }
         }
-    }
-    dependencies {
-        classpath "gradle.plugin.com.github.willir.rust:plugin:0.3.4"
+        gradlePluginPortal()
+        google()
+        mavenCentral()
     }
 }
 ```
 
-In your _project's_ `build.gradle`, `apply plugin` and
-add the `cargoNdk` configuration (optionally):
+> GitHub Packages requires authentication. Create a personal access token with
+> the `read:packages` scope (or use a fine-grained token), expose it via
+> `GITHUB_TOKEN`/`GITHUB_USER`, or store it in Gradle properties referenced
+> above. You can drop the GitHub repository entirely if you only consume the
+> plugin from `mavenLocal()`.
+
+```groovy
+// build.gradle in the root project
+plugins {
+    id "com.gemwallet.rust.cargo-ndk-android" version "0.4.0" apply false
+}
+```
+
+If you prefer `buildscript {}` blocks instead of the plugins DSL, depend on
+`com.gemwallet.rust:plugin:0.4.0` from the same repository.
+
+In your _project's_ `build.gradle`, `apply plugin` and add the `cargoNdk`
+configuration (optionally):
 
 ```groovy
 android { ... }
 
-apply plugin: "com.github.willir.rust.cargo-ndk-android"
+apply plugin: "com.gemwallet.rust.cargo-ndk-android"
 
 // The following configuration is optional and works the same way by default
 cargoNdk {
@@ -93,6 +119,10 @@ cargoNdk {
     // Path to directory with rust project
     // By default: "app/src/main/rust"
     module = "../rust"
+
+    // Absolute path to the cargo binary if PATH is not propagated to Gradle
+    // By default: tries ~/.cargo/bin/cargo and then falls back to "cargo"
+    cargoExecutable = System.getProperty("user.home") + "/.cargo/bin/cargo"
 
     // Path to rust 'target' dir (the dir where build happens), relative to module
     // By default: "target"
@@ -181,3 +211,41 @@ via not rebuilding targets that are not used during testing.
 To get the full error message in Android Studio - select the `build` tab at
 the bottom of Android Studio, and then select the topmost error group
 (`Build: failed at`); it should show you the full log.
+
+### Cargo binary cannot be found inside Android Studio
+
+Some recent Android Studio releases do not inherit your shell `PATH` when they
+are launched from the Dock/Finder. As a result Gradle might fail with
+`Failed to run 'cargo --version'` even though `cargo` is installed.
+
+The plugin now tries to detect `cargo` automatically by checking
+`~/.cargo/bin/cargo` and finally falling back to the plain `cargo` executable in
+`PATH`. If that still fails, either start Android Studio from a terminal
+(`open -na "Android Studio.app"`), or set `cargoNdk.cargoExecutable` to the
+absolute path of your `cargo` binary. You can expand the user home dynamically
+to avoid hardcoding usernames:
+
+```groovy
+cargoNdk {
+    cargoExecutable = System.getProperty("user.home") + "/.cargo/bin/cargo"
+}
+```
+
+The property applies globally and can also be overridden per `buildType`.
+
+## Publishing this fork
+
+Artifacts are uploaded to [GitHub Packages](https://github.com/0xh3rman/cargo-ndk-android-gradle/packages)
+via the `Release` workflow. To publish a new version:
+
+1. Update `plugin/build.gradle` (and related docs) with the desired version.
+2. Merge the change into your release branch and create a git tag following the
+   `v*` pattern (e.g. `git tag v0.4.1 && git push origin v0.4.1`). The workflow
+   automatically runs on tag pushes.
+3. Alternatively, trigger the workflow manually from GitHub → Actions →
+   `Release` (`Run workflow`) to publish from any ref.
+
+The workflow runs tests and executes
+`./gradlew :plugin:publishAllPublicationsToGitHubPackagesRepository` using the
+repository-provided `GITHUB_TOKEN`. Consumers need `read:packages` access and
+must authenticate (see the configuration snippet above) to resolve the plugin.

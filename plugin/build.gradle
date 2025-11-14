@@ -1,17 +1,23 @@
 plugins {
     id 'groovy'
     id 'java-gradle-plugin'
-    id 'com.gradle.plugin-publish' version '0.12.0'
+    id 'maven-publish'
+    id 'com.gradle.plugin-publish' version '1.2.1'
 }
 
-version = "0.3.4"
-group = "com.github.willir.rust"
+version = "0.4.0"
+group = "com.gemwallet.rust"
 
 gradlePlugin {
+    website = 'https://github.com/0xh3rman/cargo-ndk-android-gradle'
+    vcsUrl = 'https://github.com/0xh3rman/cargo-ndk-android-gradle.git'
     plugins {
         cargoNdkAndroidPlugin {
-            id = 'com.github.willir.rust.cargo-ndk-android'
+            id = 'com.gemwallet.rust.cargo-ndk-android'
+            displayName = 'Cargo NDK Android Plugin'
+            description = 'A plugin that helps build Rust JNI libraries via Cargo NDK for use in Android projects.'
             implementationClass = 'com.github.willir.rust.CargoNdkBuildPlugin'
+            tags.set(['rust', 'cargo', 'cargo-ndk', 'android'])
         }
     }
 }
@@ -19,19 +25,28 @@ gradlePlugin {
 dependencies {
     implementation gradleApi()
     implementation localGroovy()
-    implementation "com.android.tools.build:gradle:3.1.2"
+    compileOnly "com.android.tools.build:gradle:8.7.2"
+
+    testImplementation platform("org.spockframework:spock-bom:2.3-groovy-3.0")
+    testImplementation "org.spockframework:spock-core"
 }
 
-pluginBundle {
-    website = 'https://github.com/willir/cargo-ndk-android-gradle'
-    vcsUrl = 'https://github.com/willir/cargo-ndk-android-gradle.git'
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
+}
 
-    plugins {
-        cargoNdkAndroidPlugin {
-            id = 'com.github.willir.rust.cargo-ndk-android'
-            displayName = 'Plugin for building Rust via Cargo NDK in Android projects'
-            description = 'A plugin that helps build Rust JNI libraries via Cargo NDK for use in Android projects.'
-            tags = ['rust', 'cargo', 'cargo-ndk', 'android']
+publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/0xh3rman/cargo-ndk-android-gradle")
+            credentials {
+                username = (System.getenv("GITHUB_ACTOR")
+                        ?: System.getenv("GITHUB_USER")
+                        ?: project.findProperty("github.user")) as String
+                password = (System.getenv("GITHUB_TOKEN")
+                        ?: project.findProperty("github.token")) as String
+            }
         }
     }
 }

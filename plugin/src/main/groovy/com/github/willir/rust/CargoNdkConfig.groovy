@@ -10,6 +10,7 @@ import java.nio.file.Paths
 class CargoNdkConfig {
     private ArrayList<String> targets = null
     private String module = null
+    private String cargoExecutable = null
     private String targetDirectory = null
     ArrayList<String> librariesNames = null
     private Integer apiLevel = null
@@ -28,6 +29,7 @@ class CargoNdkConfig {
 
         this.targets = ext.targets
         this.module = ext.module
+        this.cargoExecutable = resolveCargoExecutable(ext.cargoExecutable)
         this.targetDirectory = ext.targetDirectory
         this.librariesNames = ext.librariesNames
         this.apiLevel = ext.apiLevel
@@ -46,6 +48,9 @@ class CargoNdkConfig {
         }
         if (buildTypeExt.module != null) {
             this.module = buildTypeExt.module
+        }
+        if (buildTypeExt.cargoExecutable != null) {
+            this.cargoExecutable = resolveCargoExecutable(buildTypeExt.cargoExecutable)
         }
         if (buildTypeExt.targetDirectory != null) {
             this.targetDirectory = buildTypeExt.targetDirectory
@@ -129,6 +134,10 @@ class CargoNdkConfig {
         return Paths.get(project.rootDir.getPath(), "app", "src", "main")
     }
 
+    String getCargoExecutable() {
+        return cargoExecutable
+    }
+
     private void validate() {
         if (buildType == "dev") {
             buildType = "debug"
@@ -141,6 +150,12 @@ class CargoNdkConfig {
 
         RustTargetType.validateTargetIds(targets)
 
+        if (cargoExecutable == null || cargoExecutable.trim().isEmpty()) {
+            throw new IllegalArgumentException(
+                    "cargoExecutable must not be blank.\n" +
+                    "Either remove the override or set it to the absolute path of the cargo binary.")
+        }
+
         def cargoTomlPath = Paths.get(getCargoPath().toString(), "Cargo.toml")
         if (!Files.isRegularFile(cargoTomlPath)) {
             throw new IllegalArgumentException(
@@ -149,5 +164,63 @@ class CargoNdkConfig {
                             "as a valid path to cargo project,\n" +
                             "relative to the project root '${getProjectRootDir()}'.")
         }
+    }
+
+    static String resolveCargoExecutable(String configuredValue) {
+        def normalized = normalizeCargoExecutable(configuredValue)
+        if (normalized != null) {
+            return normalized
+        }
+        return detectCargoExecutable()
+    }
+
+    static String normalizeCargoExecutable(String candidate) {
+        if (candidate == null) {
+            return null
+        }
+        def trimmed = candidate.trim()
+        if (!trimmed) {
+            return ""
+        }
+        if (trimmed.startsWith("~")) {
+            def home = findHomeDirectory()
+            if (home != null) {
+                if (trimmed == "~") {
+                    return home
+                }
+                if (trimmed.startsWith("~/") || trimmed.startsWith("~\\")) {
+                    return Paths.get(home, trimmed.substring(2)).toString()
+                }
+            }
+        }
+        return trimmed
+    }
+
+    static String detectCargoExecutable() {
+        def homePath = findHomeDirectory()
+        if (homePath != null) {
+            def fromDefaultHome = Paths.get(homePath, ".cargo", "bin", getExecutableFileName())
+            if (Files.isRegularFile(fromDefaultHome)) {
+                return fromDefaultHome.toString()
+            }
+        }
+
+        return getExecutableFileName()
+    }
+
+    static String getExecutableFileName() {
+        def osName = System.getProperty("os.name")
+        def isWindows = osName != null && osName.toLowerCase().contains("win")
+        return isWindows ? "cargo.exe" : "cargo"
+    }
+
+    static String findHomeDirectory() {
+        def candidates = [System.getProperty("user.home"), System.getenv("HOME")]
+        for (def candidate : candidates) {
+            if (candidate != null && !candidate.trim().isEmpty()) {
+                return candidate
+            }
+        }
+        return null
     }
 }

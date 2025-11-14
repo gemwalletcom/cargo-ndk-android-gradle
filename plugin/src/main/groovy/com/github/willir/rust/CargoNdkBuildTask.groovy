@@ -1,32 +1,43 @@
 package com.github.willir.rust
 
+import groovy.json.JsonSlurper
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
+import org.gradle.api.Project
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
+import org.gradle.process.ExecOperations
 import org.gradle.process.internal.ExecException
 
+import javax.inject.Inject
 import java.nio.file.Files
 import java.nio.file.Path
-import groovy.json.JsonSlurper
 
-class CargoNdkBuildTask extends DefaultTask {
+abstract class CargoNdkBuildTask extends DefaultTask {
     @Input String variant
     @Input CargoNdkExtension extension
 
     private CargoNdkConfig config
+    private final Project projectReference
+
+    CargoNdkBuildTask() {
+        this.projectReference = super.getProject()
+    }
+
+    @Inject
+    protected abstract ExecOperations getExecOperations()
 
     @TaskAction
     void buildRust() {
         config = new CargoNdkConfig(
-                project,
+                projectReference,
                 extension.buildTypeContainer.findByName(variant),
                 extension)
 
         RustTargetType rustTargetName = null
 
-        if (project.hasProperty("rust-target")) {
-            rustTargetName = RustTargetType.fromId((String) project.findProperty("rust-target"))
+        if (projectReference.hasProperty("rust-target")) {
+            rustTargetName = RustTargetType.fromId((String) projectReference.findProperty("rust-target"))
         }
 
         if (rustTargetName != null) {
@@ -43,7 +54,7 @@ class CargoNdkBuildTask extends DefaultTask {
 
         int ndkVersion = getNdkVersion(target)
 
-        def cmd = ["cargo", "ndk",
+        def cmd = [config.getCargoExecutable(), "ndk",
                    "--target", target.rustTarget,
                    "--platform", ndkVersion.toString(),
                    "--", "build"]
@@ -72,10 +83,10 @@ class CargoNdkBuildTask extends DefaultTask {
         }
         logger.info("Executing: ${cmd} from ${cwd} with extra env: ${extraEnv}")
 
-        project.exec {
-            workingDir = cwd
-            commandLine = cmd
-            environment extraEnv
+        getExecOperations().exec {
+            it.workingDir = cwd.toFile()
+            it.commandLine = cmd
+            it.environment extraEnv
         }.assertNormalExitValue()
 
         copyTarget(target)
@@ -103,17 +114,17 @@ class CargoNdkBuildTask extends DefaultTask {
     }
 
     private ArrayList<String> listCargoTargets(Path cargoDirPath) {
-        def cmd = ["cargo", "metadata", "--format-version", "1"]
+        def cmd = [config.getCargoExecutable(), "metadata", "--format-version", "1"]
         if (config.offline) {
             cmd.add("--offline")
         }
 
         def os = new ByteArrayOutputStream()
 
-        project.exec {
-            workingDir = cargoDirPath
-            commandLine = cmd
-            standardOutput = os
+        getExecOperations().exec {
+            it.workingDir = cargoDirPath.toFile()
+            it.commandLine = cmd
+            it.standardOutput = os
         }.assertNormalExitValue()
 
         def metadata = new JsonSlurper().parseText(os.toString())
@@ -145,7 +156,7 @@ class CargoNdkBuildTask extends DefaultTask {
 
     private Map<String, Object> getExtraCargoNdkEnvironments() {
         Properties properties = new Properties()
-        properties.load(project.rootProject.file('local.properties').newDataInputStream())
+        properties.load(projectReference.rootProject.file('local.properties').newDataInputStream())
         def ndkDir = properties.getProperty('ndk.dir', null)
 
         if (ndkDir != null) {
@@ -156,15 +167,15 @@ class CargoNdkBuildTask extends DefaultTask {
     }
 
     private void validateHasCargo() {
-        def cmd = ["cargo", "--version"]
+        def cmd = [config.getCargoExecutable(), "--version"]
 
         int exitValue
         def os = new ByteArrayOutputStream()
         try {
-            def p = project.exec {
-                commandLine = cmd
-                standardOutput = os
-                errorOutput = os
+            def p = getExecOperations().exec {
+                it.commandLine = cmd
+                it.standardOutput = os
+                it.errorOutput = os
             }
             exitValue = p.exitValue
         } catch (ExecException ignored) {
