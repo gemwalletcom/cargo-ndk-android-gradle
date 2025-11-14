@@ -182,20 +182,15 @@ class CargoNdkConfig {
         if (!trimmed) {
             return ""
         }
-        if (trimmed == "~") {
-            def home = System.getProperty("user.home")
-            return (home != null) ? home : trimmed
-        }
-        if (trimmed.startsWith("~/")) {
-            def home = System.getProperty("user.home")
+        if (trimmed.startsWith("~")) {
+            def home = findHomeDirectory()
             if (home != null) {
-                return Paths.get(home, trimmed.substring(2)).toString()
-            }
-        }
-        if (trimmed.startsWith("~\\")) {
-            def home = System.getProperty("user.home")
-            if (home != null) {
-                return Paths.get(home, trimmed.substring(2)).toString()
+                if (trimmed == "~") {
+                    return home
+                }
+                if (trimmed.startsWith("~/") || trimmed.startsWith("~\\")) {
+                    return Paths.get(home, trimmed.substring(2)).toString()
+                }
             }
         }
         return trimmed
