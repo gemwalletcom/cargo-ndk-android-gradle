@@ -240,8 +240,8 @@ Artifacts are uploaded to [GitHub Packages](https://github.com/gemwalletcom/carg
 via the `Release` workflow. To publish a new version:
 
 1. Update `plugin/build.gradle` (and related docs) with the desired version.
-2. Merge the change into your release branch and create a git tag following the
-   `v*` pattern (e.g. `git tag v0.4.1 && git push origin v0.4.1`). The workflow
+2. Merge the change into your release branch and create a git tag following your
+   version number (e.g. `git tag 0.5.1 && git push origin 0.5.1`). The workflow
    automatically runs on tag pushes.
 3. Alternatively, trigger the workflow manually from GitHub → Actions →
    `Release` (`Run workflow`) to publish from any ref.
