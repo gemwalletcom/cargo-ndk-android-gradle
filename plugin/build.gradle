@@ -5,15 +5,15 @@ plugins {
     id 'com.gradle.plugin-publish' version '1.2.1'
 }
 
-version = "0.4.0"
-group = "com.gemwallet.rust"
+version = "0.5.0"
+group = "com.gemwallet.gradle"
 
 gradlePlugin {
     website = 'https://github.com/gemwalletcom/cargo-ndk-android-gradle'
     vcsUrl = 'https://github.com/gemwalletcom/cargo-ndk-android-gradle.git'
     plugins {
         cargoNdkAndroidPlugin {
-            id = 'com.gemwallet.rust.cargo-ndk-android'
+            id = 'com.gemwallet.cargo-ndk'
             displayName = 'Cargo NDK Android Plugin'
             description = 'A plugin that helps build Rust JNI libraries via Cargo NDK for use in Android projects.'
             implementationClass = 'com.github.willir.rust.CargoNdkBuildPlugin'

@@ -13,7 +13,7 @@ it works similar to `android` configuration.
 
 > **Maintained fork**: the original plugin has been inactive for a while, so this
 > repository publishes a compatible fork under the
-> `com.gemwallet.rust.cargo-ndk-android` id.
+> `com.gemwallet.cargo-ndk` id.
 
 ## Usage
 
@@ -48,12 +48,12 @@ pluginManagement {
 ```groovy
 // build.gradle in the root project
 plugins {
-    id "com.gemwallet.rust.cargo-ndk-android" version "0.4.0" apply false
+    id "com.gemwallet.cargo-ndk" version "0.5.0" apply false
 }
 ```
 
 If you prefer `buildscript {}` blocks instead of the plugins DSL, depend on
-`com.gemwallet.rust:plugin:0.4.0` from the same repository.
+`com.gemwallet.gradle:plugin:0.5.0` from the same repository.
 
 In your _project's_ `build.gradle`, `apply plugin` and add the `cargoNdk`
 configuration (optionally):
@@ -61,7 +61,7 @@ configuration (optionally):
 ```groovy
 android { ... }
 
-apply plugin: "com.gemwallet.rust.cargo-ndk-android"
+apply plugin: "com.gemwallet.cargo-ndk"
 
 // The following configuration is optional and works the same way by default
 cargoNdk {
