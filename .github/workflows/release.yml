@@ -16,6 +16,11 @@ on:
         required: true
         default: true
         type: boolean
+      close_and_release:
+        description: "Close and release Sonatype staging repository"
+        required: true
+        default: true
+        type: boolean
   push:
     tags:
       - "*"
@@ -34,6 +39,7 @@ jobs:
     with:
       ref_name: ${{ github.event.inputs.ref_name || github.ref_name }}
       publish_target: sonatype
+      close_and_release: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.close_and_release == 'true' }}
     secrets:
       SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
       SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}

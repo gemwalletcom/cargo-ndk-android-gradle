@@ -49,14 +49,6 @@ publishing {
                         ?: project.findProperty("github.token")) as String
             }
         }
-        maven {
-            name = "sonatype"
-            url = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
-            credentials {
-                username = System.getenv("SONATYPE_USERNAME") ?: project.findProperty("sonatype.username") as String
-                password = System.getenv("SONATYPE_PASSWORD") ?: project.findProperty("sonatype.password") as String
-            }
-        }
     }
     publications {
         pluginMaven(MavenPublication) {
