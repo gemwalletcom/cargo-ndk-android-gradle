@@ -2,28 +2,40 @@ name: Release
 
 on:
   workflow_dispatch:
+    inputs:
+      ref_name:
+        description: "github ref name (tag)"
+        required: true
+      publish_gpr:
+        description: "Publish to Github Packages"
+        required: true
+        default: true
+        type: boolean
+      publish_sonatype:
+        description: "Publish to Maven Central"
+        required: true
+        default: true
+        type: boolean
   push:
     tags:
       - "*"
 
 jobs:
-  publish:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: 17
-          cache: gradle
-      - uses: dtolnay/rust-toolchain@stable
-      - name: Gradle Check
-        run: ./gradlew :plugin:check
-      - name: Publish to GitHub Packages
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_ACTOR: ${{ github.actor }}
-        run: ./gradlew :plugin:publishAllPublicationsToGitHubPackagesRepository
+  publish_gpr:
+    if: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.publish_gpr == 'true' }}
+    uses: ./.github/workflows/publish.yml
+    with:
+      ref_name: ${{ github.event.inputs.ref_name || github.ref_name }}
+      publish_target: gpr
+
+  publish_sonatype:
+    if: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.publish_sonatype == 'true' }}
+    uses: ./.github/workflows/publish.yml
+    with:
+      ref_name: ${{ github.event.inputs.ref_name || github.ref_name }}
+      publish_target: sonatype
+    secrets:
+      SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+      SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+      MVN_SIGNING_KEY: ${{ secrets.MVN_SIGNING_KEY }}
+      MVN_SIGNING_PASSPHRASE: ${{ secrets.MVN_SIGNING_PASSPHRASE }}
