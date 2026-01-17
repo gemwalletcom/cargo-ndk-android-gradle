@@ -50,30 +50,32 @@ publishing {
             }
         }
     }
-    publications {
-        pluginMaven(MavenPublication) {
-            pom {
-                name = 'Cargo NDK Android Plugin'
-                description = 'A plugin that helps build Rust JNI libraries via Cargo NDK for use in Android projects.'
+}
+
+// Add POM metadata to all publications (including auto-generated marker publications)
+afterEvaluate {
+    publishing.publications.configureEach {
+        pom {
+            name = 'Cargo NDK Android Plugin'
+            description = 'A plugin that helps build Rust JNI libraries via Cargo NDK for use in Android projects.'
+            url = 'https://github.com/gemwalletcom/cargo-ndk-android-gradle'
+            licenses {
+                license {
+                    name = 'MIT License'
+                    url = 'https://opensource.org/licenses/MIT'
+                }
+            }
+            developers {
+                developer {
+                    id = 'gemwallet'
+                    name = 'Gem Wallet'
+                    email = 'ops@gemwallet.com'
+                }
+            }
+            scm {
+                connection = 'scm:git:git://github.com/gemwalletcom/cargo-ndk-android-gradle.git'
+                developerConnection = 'scm:git:ssh://github.com/gemwalletcom/cargo-ndk-android-gradle.git'
                 url = 'https://github.com/gemwalletcom/cargo-ndk-android-gradle'
-                licenses {
-                    license {
-                        name = 'MIT License'
-                        url = 'https://opensource.org/licenses/MIT'
-                    }
-                }
-                developers {
-                    developer {
-                        id = 'gemwallet'
-                        name = 'Gem Wallet'
-                        email = 'ops@gemwallet.com'
-                    }
-                }
-                scm {
-                    connection = 'scm:git:git://github.com/gemwalletcom/cargo-ndk-android-gradle.git'
-                    developerConnection = 'scm:git:ssh://github.com/gemwalletcom/cargo-ndk-android-gradle.git'
-                    url = 'https://github.com/gemwalletcom/cargo-ndk-android-gradle'
-                }
             }
         }
     }
