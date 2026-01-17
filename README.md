@@ -17,8 +17,34 @@ it works similar to `android` configuration.
 
 ## Usage
 
-Add the plugin via the Gradle Plugins DSL (Groovy example shown here—see
-[Gradle docs](https://docs.gradle.org/current/userguide/plugins.html#sec:plugins_block) for Kotlin DSL):
+### Maven Central (Recommended)
+
+Add the plugin via the Gradle Plugins DSL:
+
+```groovy
+// settings.gradle
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        google()
+        mavenCentral()
+    }
+}
+```
+
+```groovy
+// build.gradle in the root project
+plugins {
+    id "com.gemwallet.cargo-ndk" version "0.5.1" apply false
+}
+```
+
+If you prefer `buildscript {}` blocks instead of the plugins DSL, depend on
+`com.gemwallet.gradle:plugin:0.5.1`.
+
+### GitHub Packages
+
+Alternatively, you can use GitHub Packages (requires authentication):
 
 ```groovy
 // settings.gradle
@@ -42,18 +68,7 @@ pluginManagement {
 > GitHub Packages requires authentication. Create a personal access token with
 > the `read:packages` scope (or use a fine-grained token), expose it via
 > `GITHUB_TOKEN`/`GITHUB_USER`, or store it in Gradle properties referenced
-> above. You can drop the GitHub repository entirely if you only consume the
-> plugin from `mavenLocal()`.
-
-```groovy
-// build.gradle in the root project
-plugins {
-    id "com.gemwallet.cargo-ndk" version "0.5.0" apply false
-}
-```
-
-If you prefer `buildscript {}` blocks instead of the plugins DSL, depend on
-`com.gemwallet.gradle:plugin:0.5.0` from the same repository.
+> above.
 
 In your _project's_ `build.gradle`, `apply plugin` and add the `cargoNdk`
 configuration (optionally):
@@ -236,17 +251,15 @@ The property applies globally and can also be overridden per `buildType`.
 
 ## Publishing this fork
 
-Artifacts are uploaded to [GitHub Packages](https://github.com/gemwalletcom/cargo-ndk-android-gradle/packages)
+Artifacts are published to both [Maven Central](https://central.sonatype.com/) and
+[GitHub Packages](https://github.com/gemwalletcom/cargo-ndk-android-gradle/packages)
 via the `Release` workflow. To publish a new version:
 
-1. Update `plugin/build.gradle` (and related docs) with the desired version.
-2. Merge the change into your release branch and create a git tag following your
-   version number (e.g. `git tag 0.5.1 && git push origin 0.5.1`). The workflow
-   automatically runs on tag pushes.
+1. Merge your changes into the release branch.
+2. Create a git tag matching the version number (e.g. `git tag 0.5.1 && git push origin 0.5.1`).
+   The workflow automatically runs on tag pushes.
 3. Alternatively, trigger the workflow manually from GitHub → Actions →
-   `Release` (`Run workflow`) to publish from any ref.
+   `Release` (`Run workflow`) to publish from any ref. You can choose to publish
+   to GitHub Packages, Maven Central, or both.
 
-The workflow runs tests and executes
-`./gradlew :plugin:publishAllPublicationsToGitHubPackagesRepository` using the
-repository-provided `GITHUB_TOKEN`. Consumers need `read:packages` access and
-must authenticate (see the configuration snippet above) to resolve the plugin.
+The version is automatically derived from the git tag via the `VER_NAME` environment variable.

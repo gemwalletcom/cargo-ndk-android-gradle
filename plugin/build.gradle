@@ -2,10 +2,11 @@ plugins {
     id 'groovy'
     id 'java-gradle-plugin'
     id 'maven-publish'
+    id 'signing'
     id 'com.gradle.plugin-publish' version '1.2.1'
 }
 
-version = "0.5.0"
+version = System.getenv("VER_NAME") ?: "0.5.1"
 group = "com.gemwallet.gradle"
 
 gradlePlugin {
@@ -48,5 +49,41 @@ publishing {
                         ?: project.findProperty("github.token")) as String
             }
         }
+    }
+    publications {
+        pluginMaven(MavenPublication) {
+            pom {
+                name = 'Cargo NDK Android Plugin'
+                description = 'A plugin that helps build Rust JNI libraries via Cargo NDK for use in Android projects.'
+                url = 'https://github.com/gemwalletcom/cargo-ndk-android-gradle'
+                licenses {
+                    license {
+                        name = 'MIT License'
+                        url = 'https://opensource.org/licenses/MIT'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'gemwallet'
+                        name = 'Gem Wallet'
+                        email = 'ops@gemwallet.com'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:git://github.com/gemwalletcom/cargo-ndk-android-gradle.git'
+                    developerConnection = 'scm:git:ssh://github.com/gemwalletcom/cargo-ndk-android-gradle.git'
+                    url = 'https://github.com/gemwalletcom/cargo-ndk-android-gradle'
+                }
+            }
+        }
+    }
+}
+
+signing {
+    def signingKey = System.getenv("MVN_SIGNING_KEY")
+    def signingPassphrase = System.getenv("MVN_SIGNING_PASSPHRASE")
+    if (signingKey && signingPassphrase) {
+        useInMemoryPgpKeys(signingKey, signingPassphrase)
+        sign publishing.publications
     }
 }

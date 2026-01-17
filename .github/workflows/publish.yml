@@ -1,0 +1,77 @@
+name: Publish
+
+on:
+  workflow_call:
+    inputs:
+      ref_name:
+        description: "github ref name (tag)"
+        required: true
+        type: string
+      publish_target:
+        description: "Publish target: gpr or sonatype"
+        required: true
+        type: string
+      close_and_release:
+        description: "Close and release Sonatype staging repository"
+        required: false
+        default: true
+        type: boolean
+    secrets:
+      SONATYPE_USERNAME:
+        required: false
+      SONATYPE_PASSWORD:
+        required: false
+      MVN_SIGNING_KEY:
+        required: false
+      MVN_SIGNING_PASSPHRASE:
+        required: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    env:
+      VER_NAME: ${{ inputs.ref_name }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref_name }}
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: gradle
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Gradle Check
+        run: ./gradlew :plugin:check
+
+      - name: Publish to GitHub Packages
+        if: ${{ inputs.publish_target == 'gpr' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_ACTOR: ${{ github.actor }}
+        run: ./gradlew :plugin:publishAllPublicationsToGitHubPackagesRepository
+
+      - name: Publish to Maven Central
+        if: ${{ inputs.publish_target == 'sonatype' }}
+        env:
+          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+          MVN_SIGNING_KEY: ${{ secrets.MVN_SIGNING_KEY }}
+          MVN_SIGNING_PASSPHRASE: ${{ secrets.MVN_SIGNING_PASSPHRASE }}
+        run: |
+          if [ -z "${MVN_SIGNING_KEY}" ]; then
+            echo "MVN_SIGNING_KEY is empty"
+            exit 1
+          fi
+          export MVN_SIGNING_KEY="$(printf '%s' "$MVN_SIGNING_KEY" | base64 --decode)"
+          if [ "${{ inputs.close_and_release }}" == "true" ]; then
+            ./gradlew :plugin:publishAllPublicationsToSonatypeRepository closeAndReleaseSonatypeStagingRepository
+          else
+            ./gradlew :plugin:publishAllPublicationsToSonatypeRepository
+          fi
