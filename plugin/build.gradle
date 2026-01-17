@@ -82,8 +82,9 @@ publishing {
 signing {
     def signingKey = System.getenv("MVN_SIGNING_KEY")
     def signingPassphrase = System.getenv("MVN_SIGNING_PASSPHRASE")
+    required { signingKey && signingPassphrase }
     if (signingKey && signingPassphrase) {
         useInMemoryPgpKeys(signingKey, signingPassphrase)
-        sign publishing.publications
     }
+    sign publishing.publications
 }
