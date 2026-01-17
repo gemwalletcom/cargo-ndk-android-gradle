@@ -35,12 +35,12 @@ pluginManagement {
 ```groovy
 // build.gradle in the root project
 plugins {
-    id "com.gemwallet.cargo-ndk" version "0.5.1" apply false
+    id "com.gemwallet.cargo-ndk" version "0.5.2" apply false
 }
 ```
 
 If you prefer `buildscript {}` blocks instead of the plugins DSL, depend on
-`com.gemwallet.gradle:plugin:0.5.1`.
+`com.gemwallet.gradle:plugin:0.5.2`.
 
 ### GitHub Packages
 
@@ -256,7 +256,7 @@ Artifacts are published to both [Maven Central](https://central.sonatype.com/) a
 via the `Release` workflow. To publish a new version:
 
 1. Merge your changes into the release branch.
-2. Create a git tag matching the version number (e.g. `git tag 0.5.1 && git push origin 0.5.1`).
+2. Create a git tag matching the version number (e.g. `git tag 0.5.2 && git push origin 0.5.2`).
    The workflow automatically runs on tag pushes.
 3. Alternatively, trigger the workflow manually from GitHub → Actions →
    `Release` (`Run workflow`) to publish from any ref. You can choose to publish
