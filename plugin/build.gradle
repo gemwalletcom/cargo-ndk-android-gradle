@@ -3,11 +3,20 @@ plugins {
     id 'java-gradle-plugin'
     id 'maven-publish'
     id 'signing'
-    id 'com.gradle.plugin-publish' version '1.2.1'
+    id 'com.gradle.plugin-publish' version '2.0.0'
 }
 
 version = System.getenv("VER_NAME") ?: "0.5.1"
 group = "com.gemwallet.gradle"
+
+def groovyMajor = (GroovySystem.version.tokenize('.')[0] as Integer)
+def spockGroovyVersion = groovyMajor >= 5 ? '5.0' : (groovyMajor >= 4 ? '4.0' : '3.0')
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
 
 gradlePlugin {
     website = 'https://github.com/gemwalletcom/cargo-ndk-android-gradle'
@@ -26,10 +35,11 @@ gradlePlugin {
 dependencies {
     implementation gradleApi()
     implementation localGroovy()
-    compileOnly "com.android.tools.build:gradle:8.7.2"
+    compileOnly "com.android.tools.build:gradle:8.13.2"
 
-    testImplementation platform("org.spockframework:spock-bom:2.3-groovy-3.0")
+    testImplementation platform("org.spockframework:spock-bom:2.4-groovy-${spockGroovyVersion}")
     testImplementation "org.spockframework:spock-core"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 }
 
 tasks.withType(Test).configureEach {
@@ -84,7 +94,7 @@ afterEvaluate {
 signing {
     def signingKey = System.getenv("MVN_SIGNING_KEY")
     def signingPassphrase = System.getenv("MVN_SIGNING_PASSPHRASE")
-    required { signingKey && signingPassphrase }
+    required = signingKey && signingPassphrase
     if (signingKey && signingPassphrase) {
         useInMemoryPgpKeys(signingKey, signingPassphrase)
     }
